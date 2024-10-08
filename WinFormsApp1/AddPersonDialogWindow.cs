@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace WinFormsApp1
 {
@@ -15,16 +17,17 @@ namespace WinFormsApp1
         private TextBox txtCardNumber;
         private TextBox txtName;
         private DateTimePicker dtBirthday;
-        private Button btnOK;
-        private Button btnCancel;
-        private string initialCardNumber;
-        private Point lastMousePosition;
-        private bool isEditingCardNumber = false;
 
+        private Button btnCancel;
+        private Button btnOK;
+        private string initialCardNumber;
+        private bool isEditingCardNumber = false;
+        private bool isAdminMode = false;
         public bool EnableCardNumberEdit { get; set; } = true;
         public bool EnableBirthdayEdit { get; set; } = true;
 
-        
+
+
 
         public AddPersonDialogWindow(string name, int? cardNumber, DateTime birthday, bool EnableCardNumberEdit, bool EnableBirthdayEdit)
         {
@@ -45,7 +48,7 @@ namespace WinFormsApp1
             txtCardNumber.MaxLength = 5;
 
             txtCardNumber.KeyPress += txtCardNumber_KeyPress;
-            initialCardNumber = txtCardNumber.ToString();
+            initialCardNumber = txtCardNumber.Text;
 
             txtName = new TextBox { Text = name };
             grayHint(txtName, "Введите имя");
@@ -64,8 +67,9 @@ namespace WinFormsApp1
             txtCardNumber.Location = new Point(10, 10);
             txtName.Location = new Point(10, 40);
             dtBirthday.Location = new Point(10, 70);
-            btnOK.Location = new Point(10, 100);
+
             btnCancel.Location = new Point(80, 100);
+            btnOK.Location = new Point(10, 100);
 
             Controls.Add(txtCardNumber);
             Controls.Add(txtName);
@@ -73,18 +77,29 @@ namespace WinFormsApp1
             Controls.Add(btnOK);
             Controls.Add(btnCancel);
 
+
             btnOK.Click += btnOk_Click;
             btnCancel.Click += btnCancel_Click;
-            
+            MouseMove += AddPersonDialogWindow_MouseMove;
+            /*btnOK.MouseMove += ButtonOk_MouseMove;*/
+
         }
         private void btnOk_Click(object sender, EventArgs e)
         {
-            CardNumber = int.Parse(txtCardNumber.Text);
-            Name = txtName.Text;
-            Birthday = dtBirthday.Value;
+            if (isAdminMode && (txtCardNumber.Text.ToString() != initialCardNumber))
+            {
+                MessageBox.Show("Нельзя менять номер карты существующего пользователя!");
+            }
+            else if ((txtCardNumber.Text.Length == 5) && !(isAdminMode && (txtCardNumber.Text.ToString() != initialCardNumber)))
+            {
+                CardNumber = int.Parse(txtCardNumber.Text);
+                Name = txtName.Text;
+                Birthday = dtBirthday.Value;
 
-            DialogResult = DialogResult.OK;
-            Close();
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            else MessageBox.Show("Номер карты должен состоять ровно из пяти цифр!");
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -121,6 +136,7 @@ namespace WinFormsApp1
                 e.Handled = true;
             }
         }
+       
         private void AddPersonDiologWindow_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.Shift && e.KeyCode == Keys.L)
@@ -136,42 +152,63 @@ namespace WinFormsApp1
                     btnCancel.ForeColor = Color.Green;
                     btnOK.BackColor = Color.FloralWhite;
                     btnCancel.BackColor = Color.FloralWhite;
-
                     txtCardNumber.Enabled = true;
                     dtBirthday.Enabled = true;
-                    /*MouseEventArgs mouseEventArgs = new MouseEventArgs(MouseButtons.Left, 1, lastMousePosition.X, lastMousePosition.Y, 0);*/
-                    if (isEditingCardNumber)
-                    {
-                        btnOK.MouseMove += dontPressTheOk;
-                    }
+                    isAdminMode = true;
+                    /*MessageBox.Show((int.Parse(txtCardNumber.Text) == int.Parse(initialCardNumber)).ToString());*/
                 }
+            }
+        }
+        private void AddPersonDialogWindow_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isAdminMode && (txtCardNumber.Text.ToString() != initialCardNumber))
+            {
+                dontPressTheOk(sender, e);
             }
         }
         private void dontPressTheOk(object sender, MouseEventArgs e)
         {
-            // Получаем текущие координаты кнопки
+
             int newX = btnOK.Location.X;
             int newY = btnOK.Location.Y;
 
-            // Определяем новое положение кнопки, чтобы она укрылась от курсора
-            if (e.X < btnOK.Location.X)
-                newX -= 10; // Если курсор слева, уводим кнопку влево
-            else
-                newX += 10; // Если курсор справа, уводим кнопку вправо
+            // Движение по оси X
+            if (e.X < btnOK.Location.X && btnOK.Location.X > 1)
+                newX += 1;
+            else if (e.X > btnOK.Location.X + btnOK.Width && btnOK.Location.X < ClientSize.Width - btnOK.Width)
+                newX -= 1;
 
-            if (newX < 0) newX = 0; // Проверка на выход за границы
-            if (newX > this.ClientSize.Width - btnOK.Width) newX = this.ClientSize.Width - btnOK.Width;
+            // Движение по оси Y
+            if (e.Y < btnOK.Location.Y && btnOK.Location.Y > 1)
+                newY += 1;
+            else if (e.Y > btnOK.Location.Y + btnOK.Height && btnOK.Location.Y < ClientSize.Height - btnOK.Height)
+                newY -= 1;
 
-            btnOK.Location = new Point(newX, newY); // Устанавливаем новое положение кнопки
+            // Проверка границ
+            if (newX < 0) newX = 0;
+            if (newX > ClientSize.Width - btnOK.Width) newX = ClientSize.Width - btnOK.Width;
+            if (newY < 0) newY = 0;
+            if (newY > ClientSize.Height - btnOK.Height) newY = ClientSize.Height - btnOK.Height;
+            
+            if (IsButtonInCorner(btnOK))
+            {
+                Random r = new Random();
+                newY = r.Next(1, btnOK.Height);
+                newX = r.Next(1, btnOK.Width);
+            }
+            btnOK.Location = new Point(newX, newY);
+            btnOK.BringToFront();
         }
-        private void cardNumberTextBox_Enter(object sender, EventArgs e)
+        private bool IsButtonInCorner(Button button)
         {
-            isEditingCardNumber = true; // Вход в режим редактирования
+            if ((button.Location.X == 0 && button.Location.Y == 0) ||
+                (button.Location.X + button.Width == ClientSize.Width && button.Location.Y == 0) ||
+                (button.Location.X == 0 && button.Location.Y + button.Height == ClientSize.Height) ||
+                (button.Location.X + button.Width == ClientSize.Width && button.Location.Y + button.Height == ClientSize.Height))
+                return true;
+
+            return false;
         }
 
-        private void cardNumberTextBox_Leave(object sender, EventArgs e)
-        {
-            isEditingCardNumber = false; // Выход из режима редактирования
-        }
     }
 }
