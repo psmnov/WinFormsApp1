@@ -35,7 +35,12 @@ namespace WinFormsApp1
         }
             
            
-        public Person() { }
+        public Person(int cardNumber, string name, DateTime birthday ) {
+            this.cardNumber = (cardNumber.ToString().Length == 5) ? cardNumber : throw new InvalidProgramException();
+            this.name = name;
+            this.birthday = birthday;
+        
+        }
         public int calcAge(DateTime date)
         {
             return date.Year - birthday.Year - Convert.ToInt16(date.DayOfYear < birthday.DayOfYear); 

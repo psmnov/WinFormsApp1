@@ -22,12 +22,8 @@ namespace WinFormsApp1
             if (addPersonDialogWindow.ShowDialog() == DialogResult.OK)
             {
 
-                Person newPerson = new Person
-                {
-                    CardNumber = addPersonDialogWindow.CardNumber,
-                    Name = addPersonDialogWindow.Name,
-                    Birthday = addPersonDialogWindow.Birthday
-                };
+                Person newPerson = addPersonDialogWindow.person;
+                
 
                 persons.Add(newPerson);
 
@@ -43,14 +39,10 @@ namespace WinFormsApp1
 
 
             AddPersonDialogWindow addPersonDialogWindow = new AddPersonDialogWindow(selectedPerson.Name, selectedPerson.CardNumber, selectedPerson.Birthday, false, false);
-        /*    addPersonDialogWindow.EnableCardNumberEdit = false;
-            addPersonDialogWindow.EnableBirthdayEdit = false;*/
 
             if (addPersonDialogWindow.ShowDialog() == DialogResult.OK)
             {
-                selectedPerson.Name = addPersonDialogWindow.Name;
-                selectedPerson.Birthday = addPersonDialogWindow.Birthday;
-                selectedPerson.CardNumber = addPersonDialogWindow.CardNumber;
+                selectedPerson = addPersonDialogWindow.person;
                 refreshTheListBox(sender, e);
 
             }

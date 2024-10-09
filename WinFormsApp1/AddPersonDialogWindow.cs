@@ -10,18 +10,17 @@ namespace WinFormsApp1
 {
     internal class AddPersonDialogWindow : Form
     {
-        public int CardNumber { get; set; }
+        /*public int CardNumber { get; set; }
         public string Name { get; set; }
-        public DateTime Birthday { get; set; }
-
+        public DateTime Birthday { get; set; }*/
+        public Person person { get; set; }
         private TextBox txtCardNumber;
         private TextBox txtName;
         private DateTimePicker dtBirthday;
-
         private Button btnCancel;
         private Button btnOK;
         private string initialCardNumber;
-        private bool isEditingCardNumber = false;
+
         private bool isAdminMode = false;
         public bool EnableCardNumberEdit { get; set; } = true;
         public bool EnableBirthdayEdit { get; set; } = true;
@@ -35,7 +34,7 @@ namespace WinFormsApp1
             KeyPreview = true;
 
             Shown += (sender, e) =>
-            {
+            { 
                 btnOK.Focus();
             };
             btnOK = new Button { Text = "Ок" };
@@ -81,7 +80,6 @@ namespace WinFormsApp1
             btnOK.Click += btnOk_Click;
             btnCancel.Click += btnCancel_Click;
             MouseMove += AddPersonDialogWindow_MouseMove;
-            /*btnOK.MouseMove += ButtonOk_MouseMove;*/
 
         }
         private void btnOk_Click(object sender, EventArgs e)
@@ -92,10 +90,7 @@ namespace WinFormsApp1
             }
             else if ((txtCardNumber.Text.Length == 5) && !(isAdminMode && (txtCardNumber.Text.ToString() != initialCardNumber)))
             {
-                CardNumber = int.Parse(txtCardNumber.Text);
-                Name = txtName.Text;
-                Birthday = dtBirthday.Value;
-
+                person = new Person(int.Parse(txtCardNumber.Text), txtName.Text, dtBirthday.Value);
                 DialogResult = DialogResult.OK;
                 Close();
             }
@@ -155,7 +150,6 @@ namespace WinFormsApp1
                     txtCardNumber.Enabled = true;
                     dtBirthday.Enabled = true;
                     isAdminMode = true;
-                    /*MessageBox.Show((int.Parse(txtCardNumber.Text) == int.Parse(initialCardNumber)).ToString());*/
                 }
             }
         }
