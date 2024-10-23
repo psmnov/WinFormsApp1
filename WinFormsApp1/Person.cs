@@ -1,27 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace WinFormsApp1
 {
-    public class Person: IPerson
+    [Serializable]
+    public class Person : IPerson
     {
-        private int cardNumber = 0;
-        private string name  = string.Empty;
+        private int? cardNumber;
+        private string name = string.Empty;
+        private string hashPassword = string.Empty;
 
-        private DateTime birthday  = DateTime.MinValue;
-        public int CardNumber
+        private DateTime birthday = DateTime.MinValue;
+        public Person() { }
+        public int? CardNumber
         {
             get { return cardNumber; }
-            set { 
-                if(value.ToString().Length == 5)
+            set
+            {
+                if (value.ToString().Length == 5)
                 {
                     cardNumber = value;
                 }
             }
-                
+
         }
         public string Name
         {
@@ -33,21 +40,51 @@ namespace WinFormsApp1
             get { return birthday; }
             set { birthday = value; }
         }
-            
-           
-        public Person(int cardNumber, string name, DateTime birthday ) {
-            this.cardNumber = (cardNumber.ToString().Length == 5) ? cardNumber : throw new InvalidProgramException();
+
+        public string HashPassword
+        {
+            get {
+                return hashPassword;
+            }
+            set
+            {
+                hashPassword = value;
+            }
+        }
+
+        public Person(int? cardNumber, string name, DateTime birthday, string pass)
+        {
+            this.cardNumber = cardNumber;
             this.name = name;
             this.birthday = birthday;
-        
+            this.hashPassword = CalculateMD5Hash(pass);
         }
         public int calcAge(DateTime date)
         {
-            return date.Year - birthday.Year - Convert.ToInt16(date.DayOfYear < birthday.DayOfYear); 
+            int result = date.Year - birthday.Year - Convert.ToInt16(date.DayOfYear < birthday.DayOfYear);
+            if (result >= 0) return result;
+            return 0;
         }
-       /* public String toString(Person person)
+        public bool Equals(Person p1)
         {
-            return (String)(person.Name + person.calcAge + person.birthday);
-        }*/
+            return (p1.birthday == birthday) && (p1.cardNumber == cardNumber) && (this.name == p1.name);
+        }
+        private static string CalculateMD5Hash(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in hashBytes)
+                {
+                    sb.Append(b.ToString("x2")); //преобразует каждый байт в 16-ричную сс
+                }
+                return sb.ToString();
+            }
+        }
+        
     }
 }

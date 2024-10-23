@@ -14,16 +14,16 @@ namespace WinFormsApp1
         private TextBox txtPassword;
         private Button btnOK;
         private Button btnCancel;
-
+        private Person person;
         public string EnteredPassword { get; private set; }
-        public LoginPassWindow(/*ComboBox cbLogin, TextBox txtPassword*/)
+        public LoginPassWindow(Person p)
         {
 
             cbLogin = new ComboBox();
             txtPassword = new TextBox();
             btnOK = new Button { Text = "OK" };
             btnCancel = new Button { Text = "Отмена" };
-
+            person = p;
 
             Controls.Add(cbLogin);
             Controls.Add(txtPassword);
@@ -63,14 +63,16 @@ namespace WinFormsApp1
         }
         private void btnOk_Click(object sender, EventArgs e)
         {
-            EnteredPassword = cbLogin.Text + txtPassword.Text;
+            EnteredPassword = /*cbLogin.Text + */txtPassword.Text;
             string md5Hash = CalculateMD5Hash(EnteredPassword);
-            XDocument xmlDoc = XDocument.Load("C:\\Users\\sebas\\source\\repos\\WinFormsApp1\\WinFormsApp1\\app.config.xml");
+            /*XDocument xmlDoc = XDocument.Load("C:\\Users\\sebas\\source\\repos\\WinFormsApp1\\WinFormsApp1\\app.config.xml");*/
 
-            string storedPasswordHash = xmlDoc.Descendants("add")
+            /*string storedPasswordHash = xmlDoc.Descendants("add")
                                        .Where(x => (string)x.Attribute("key") == "AdminPasswordHash")
                                        .Select(x => (string)x.Attribute("value"))
-                                       .FirstOrDefault();
+                                       .FirstOrDefault();*/
+            string storedPasswordHash = person.HashPassword;
+
             if (storedPasswordHash == md5Hash)
             {
                 DialogResult = DialogResult.OK;
